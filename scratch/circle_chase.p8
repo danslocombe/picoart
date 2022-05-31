@@ -81,7 +81,8 @@ x = rnd(128)
 y = rnd(128)
 d2 = (x-64)*(x-64)+(y-64)*(y-64)
 if abs(d2-1024) < 128 then
-  local ta = time() / 3
+  --local ta = time() / 3
+  local ta = -0.25
   --local ta = 0.5 -- t / 10000
   local tx = cos(ta)
   local ty = sin(ta)
@@ -93,7 +94,13 @@ if abs(d2-1024) < 128 then
 
   -- simple
   --local k = (dot + 1) * 0.5
-  --col = dot < 0.0 and 14 or 15 
+  --local thresh = 0
+  --col = dot < thresh and 14 or 15 
+  
+  
+  -- rand
+  local k = (dot + 1)  * 0.5
+  col = (rnd() < k) and 14 or 15
 
   -- dan trying to be smart
   --local c = 3
