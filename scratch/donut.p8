@@ -72,47 +72,53 @@ function sigmoid(x)
 end
 
 
+camera(-64, -64)
 _set_fps(60)
 t = 0
 pal = {0, 7, 10}
 ::_::
 t += 1
-x = rnd(128)
-y = rnd(128)
---local xmod = x + sin(time()) * 8
---local xmod = 64 + (64 - x) * (1 + (time() * 4) / 2) % 128
+x = rnd(128)-64
+y = rnd(128)-64
+
+--k = 1 / (1 + 0.5 * sin(time() * 0.15))
+--
+--xmod = k*x * sin(time())
+--ymod = k*y
+
 xmod = x
-d2 = (xmod-64)*(xmod-64)+(y-64)*(y-64)
+ymod = y
+
+--if abs(xmod) < 12 then
+  --xmod *= 2
+--end
+
+--cc = 24
+--while (xmod*xmod + ymod*ymod) < cc*cc do
+--  ymod *= 4
+--  xmod *= 4
+--  --cc *= 2
+--end
+
+d2 = xmod*xmod + ymod*ymod
 d2_from_circ = abs(d2-1024)
+
+a = atan2(y, x)
+
+d2_from_circ += sin(a * (5 + 5*sin(time() * 0.063))) * 128
+
 if d2_from_circ < 256 then
-  --local ta = time() / 3
   local ta = -0.25
-  --local ta = 0.5 -- t / 10000
   local tx = cos(ta)
   local ty = sin(ta)
 
-  local dx = (x - 64) / 32
-  local dy = (y - 64) / 32
+  local dx = x/32
+  local dy = y/32
 
   local dot = tx * dx + ty * dy
 
-  -- simple
-  --local k = (dot + 1) * 0.5
-  --local thresh = 0
-  --col = dot < thresh and 14 or 15 
-  
-  
-  -- rand
   local k = (dot + 1)  * 0.5
-  col = (rnd() < k*k) and 14 or 15
-
-  -- dan trying to be smart
-  --local c = 3
-  --local k = 10
-  --local x0 = sigmoid(k * dot + c)
-  --local x1 = sigmoid(k * dot - c)
-  --local r = rnd() 
-  --col = (r < x0 and pal[1]) or (r < x1 and pal[2]) or pal[3]
+  col = (rnd() < k) and 14 or 15
 elseif d2_from_circ < 512 then
   col = 1
 else
