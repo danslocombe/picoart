@@ -38,8 +38,8 @@ y = rnd(128)
 a = sin(t() / 10)
 b = 1 -- + abs(cos(t() / 10))
 ty = 64 + sin(a*2 + x / (40*b)) * 10
-
-col = abs(ty-y) < 10 and 7 or 1
+dd = abs(ty-y)
+col = dd < 4 and 7 or dd < 8 and 12 or 1
 
 --if rnd() < 0.01 then
 --    copy_noise_small()
