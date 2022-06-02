@@ -83,12 +83,9 @@ __lua__
 -- spiky donuts takes the above
 -- algorithm and modulates it a bit
 --
-o=128u=-64ta=-0.25tx=cos(ta)ty=sin(ta)camera(u,u)_set_fps(60)::_::x=rnd(o)+u
+o=128u=-64camera(u,u)_set_fps(60)::_::x=rnd(o)+u
 y=rnd(o)+u
-d2=x*x+y*y
-e=abs(d2-1024)e+=sin(atan2(y,x)*(9+9*sin(time()/16)))*200
-col = e<256and((rnd()<(tx*x/32+ty*y/32+1)/2)and 14or 15)or(e<512and 1)or 12
-circ(x, y, 1, col)goto _
+e=abs(x*x+y*y-1024)e+=sin(atan2(y,x)*(9+9*sin(time()/16)))*200c=e<256and((rnd()<(y/32+1)/2)and 14or 15)or(e<512and 1)or 12circ(x,y,1,c)goto _
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
