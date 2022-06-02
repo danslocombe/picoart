@@ -1,40 +1,87 @@
 pico-8 cartridge // http://www.pico-8.com
 version 34
 __lua__
--- spiky donut, made at home
+-- spiky donut
 --
--- recently ran across a microcontroller wired to a set of leds arranged in a circle
--- i wanted to design something for this unusual setup
+-- recently i ran across a 
+-- microcontroller wired
+-- to a set of leds arranged in
+-- a circle
+-- 
+-- i wanted to design something
+-- for the unusual setup
+-- i didnt, but i did use
+-- the ideas to build this
+-- tweetcart
 --
--- i settled on constructing two "poles" at opposite sides that spill out colour and somehow
--- interact as they meet 
--- being me, i went straight to dithering, and looked for a random distribution that could
--- smoothly transition between the colours
+--
+-- my idea was to have two
+-- "poles" at opposite sides
+-- that spill out colour.
+-- the colour would somehow
+-- interact as it met in the
+-- middle
+-- 
+-- being me, i went straight
+-- to dithering
+-- i looked for a random
+-- distribution that could
+-- smoothly transition between
+-- the colours
 --
 -- something like this:
 -- 
+--   light pole here at the top
+--             |
 --            ____
 --          /x____ \
 --         / /    \x\
---        |x|     |x|
+--         |x|    | | - donut
 --         \x\    /x/
 --          \xxxxxx/
+--             |
+--         dark pole
 --
+-- with x being dark coloured
+-- points
+-- at the top the points would
+-- be almost all light
+-- at the bottom the points would
+-- be almost all dark
+-- around the middle they would
+-- be distributed like sprinkles
 -- 
--- so you can do this as follows:
--- fix a unit vector vp pointing to one of the poles (lets say straight up)
--- for each point on the donut, find the vector from the centre to that point v
+-- the approach i took is this:
+-- fix a unit vector vp pointing
+-- to the light pole 
+-- (lets say straight up)
+-- for each point on the unit
+-- donut, find the vector from
+-- the centre to that point v
 -- then dot v with vp
--- this gives a value k in [-1, 1] which can be normalized to knorm in [0, 1]
--- then generate a random value x in [0, 1]
--- if x < k, colour the point dark otherwise colour it light
+-- this gives a value k in [-1,1]
+-- which can be normalized 
+-- to k_norm in [0, 1]
+-- then generate a random
+-- value x in [0, 1]
+-- if x < k_norm, colour
+-- the point dark otherwise
+-- colour it light
 -- 
--- this works great but lead me to the question, what is the distribution of x?
--- or the general question "given two random unit vectors what is the 
--- distribution of their dot product?"
--- [answer left as an exercise to the reader, but it is a fun one]
+-- this works great!
+-- it also leads to the question:
+-- what is the distribution of x?
+-- or the general question
+-- "given two uniform random unit
+-- vectors,  what is the probability
+-- distribution of their 
+-- dot product?"
+--
+-- [answer left as an exercise
+-- to the reader]
 -- 
--- spiky donuts is this with some spikes thrown in
+-- spiky donuts takes the above
+-- algorithm and modulates it a bit
 --
 o=128u=-64ta=-0.25tx=cos(ta)ty=sin(ta)camera(u,u)_set_fps(60)::_::x=rnd(o)+u
 y=rnd(o)+u
