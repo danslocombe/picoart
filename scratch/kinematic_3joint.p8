@@ -137,6 +137,7 @@ line(body_x, 0, body_x, 128, 5)
 line(body_x - 128, body_y - 128, body_x + 128, body_y + 128, 5)
 line(body_x + 128, body_y - 128, body_x - 128, body_y + 128, 5)
 line(0, body_y, 128, body_y, 5)
+circ(body_x, body_y, total_leg_len, 5)
 
 mouse_x = stat(32)-1
 mouse_y = stat(33)-1
@@ -149,67 +150,61 @@ vel = 0
 body_y = body_y_0 + 4 * vel
 
 
---update_foot(foot, vel)
-
 foot.x = mouse_x
 foot.y = mouse_y
 
---line(body_x, body_y, foot.x, foot.y, 5)
 
---local len = 8
---local xx = body_x + len * cos(foot.top_bone_angle)
---local yy = body_y + len * sin(foot.top_bone_angle)
---line(body_x, body_y, xx, yy, 5)
---line(xx, yy, foot.x, foot.y, 5)
+local x_off_end = (foot.x - body_x)
+local y_off_end = (foot.y - body_y)
 
+local gamma = atan2(x_off_end, y_off_end) + 0.2 * sin(t / 100)
 
-local x_off = (foot.x - body_x)
-local y_off = (foot.y - body_y)
-local x_off2 = x_off * x_off
-local y_off2 = y_off * y_off
+local x3_off = ((foot.x - bottom_len * cos(gamma)) - body_x)
+local y3_off = ((foot.y - bottom_len * sin(gamma)) - body_y)
 
-local alpha = acos((x_off2 + y_off2 - top_len2 - mid_len2) / (2 * top_len * mid_len))
-local beta = asin((mid_len * sin(alpha)) / sqrt(x_off2 + y_off2))
-top_joint = atan2(x_off, y_off) - beta
---top_joint = atan2(x_off, y_off) - beta
-mid_joint = ( 0.5 - alpha)
---bottom_joint = 
---local wrist_joint_new = 
+local x3_off2 = x3_off * x3_off
+local y3_off2 = y3_off * y3_off
 
------local bottom_joint_new = -acos((x_off2 + y_off2 - top_len2 - bottom_len2) / (2 * top_len * bottom_len))
------
--------bottom_joint = lerp_angle(bottom_joint_new, bottom_joint, 3)
------bottom_joint = bottom_joint_new
------local top_joint_new = atan2(y_off, x_off) - atan2(bottom_len * sin(bottom_joint), top_len + bottom_len * cos(bottom_joint))
--------top_joint = lerp_angle(top_joint_new, top_joint, 3)
------top_joint = top_joint_new
+local alpha_num = (x3_off2 + y3_off2 - top_len2 - mid_len2)
+local alpha_denom = (2 * top_len * mid_len)
+
+--print(alpha_num, 80, 10, 7)
+--print(alpha_denom, 80, 20, 7)
+print(alpha_num / alpha_denom, 80, 10, 7)
+
+local alpha = acos(alpha_num / alpha_denom)
+print(alpha, 80, 20, 7)
+
+local beta_num = (mid_len * sin(alpha))
+local beta_denom = sqrt(x3_off2 + y3_off2)
+--print(beta_num, 80, 80, 7)
+--print(beta_denom, 80, 90, 7)
+local beta = asin( beta_num / beta_denom)
+--print(beta, 80, 110, 7)
+top_joint = atan2(x3_off, y3_off) + beta
+mid_joint = ( - alpha )
 
 local pos_k = 2
 
 joint_x = lerp(body_x + top_len * cos(top_joint), joint_x, pos_k)
 joint_y = lerp(body_y + top_len * sin(top_joint), joint_y, pos_k)
 
-mid_x = lerp(joint_x + mid_len * cos(-top_joint + mid_joint), mid_x, pos_k)
-mid_y = lerp(joint_y + mid_len * sin(-top_joint + mid_joint), mid_y, pos_k)
+print(top_joint, 10, 10, 7)
+print(mid_joint, 10, 20, 7)
+
+mid_x = lerp(joint_x + mid_len * cos(top_joint - mid_joint), mid_x, pos_k)
+mid_y = lerp(joint_y + mid_len * sin(top_joint - mid_joint), mid_y, pos_k)
 
 bottom_joint = atan2(foot.x - mid_x, foot.y - mid_y)
---bottom_joint = 0.5
 
 foot_x = lerp(mid_x + bottom_len * cos(bottom_joint), foot_x, pos_k)
 foot_y = lerp(mid_y + bottom_len * sin(bottom_joint), foot_y, pos_k)
---foot_x = lerp(mid_x + bottom_len * cos(-top_joint + mid_joint + bottom_joint), foot_x, pos_k)
---foot_y = lerp(mid_y + bottom_len * sin(-top_joint + mid_joint + bottom_joint), foot_y, pos_k)
-
---foot_x = mouse_x
---foot_y = mouse_y
 
 line(body_x, body_y, joint_x, joint_y, 12)
 line(joint_x, joint_y, mid_x, mid_y, 14)
 circ(mid_x, mid_y, 2, 15)
 line(mid_x, mid_y, foot_x, foot_y, 10)
 circ(mouse_x, mouse_y, 2, 6)
---line(mid_x, mid_x, foot_x, foot_y, 1)
---line(joint_x, joint_y, foot.x, foot.y, 7)
 
 
 circ(body_x, body_y, 4, 11)
