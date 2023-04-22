@@ -104,8 +104,8 @@ end
 
 function _init()
     local base_nodes = make_stem(100, 120, -6, -6, -2, -4, 10)
-    attach_branch(base_nodes[4], 4, -1, 1, -1, 4, {
-        k_base = 0
+    attach_branch(base_nodes[4], 4, -1, 3, -3, 4, {
+        --k_base = 0
         --k_base = 0.2
     })
 
