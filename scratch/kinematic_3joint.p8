@@ -5,8 +5,8 @@ __lua__
 -- mouse support
 poke(0x5f2d, 1)
 
-body_x = 10
-body_y_0 = 38
+body_x = 64
+body_y_0 = 64
 body_y = body_y_0
 
 foot = {
@@ -32,12 +32,14 @@ end
 
 t = 0
 
-local top_len = 12
+local top_len = 8
+local mid_len = 12
 local bottom_len = 16
 local top_len2 = top_len * top_len
+local mid_len2 = mid_len * mid_len
 local bottom_len2 = bottom_len * bottom_len
 
-local total_leg_len = top_len + bottom_len
+local total_leg_len = top_len + mid_len + bottom_len
 local total_leg_len_2 = total_leg_len * total_leg_len
 
 function update_foot(foot, vel)
@@ -48,7 +50,7 @@ function update_foot(foot, vel)
         --print(sqrt(d2), 64, 10, 8)
         --print(sqrt(total_leg_len_2), 64, 20, 8)
         --local k = 8 * vel
-        if foot.x < body_x and (2 / vel) * d2 > stretch_factor * total_leg_len_2 then
+        if foot.x < body_x and (1.5 / vel) * d2 > stretch_factor * total_leg_len_2 then
         --if body_x - foot.x > k then
             --foot.target_x = body_x + 13 * vel
             local yy = (foot.y - body_y) * (foot.y - body_y)
@@ -101,16 +103,40 @@ function acos(x)
   return dan_hack / (2 * 3.14159265358979)
 end
 
+function asin(x)
+  local negate = (x < 0 and 1.0 or 0.0)
+  x = abs(x)
+  local ret = -0.0187293
+  ret *= x
+  ret += 0.0742610
+  ret *= x
+  ret -= 0.2121144
+  ret *= x
+  ret += 1.5707288
+  ret = 3.14159265358979*0.5 - sqrt(1.0 - x)*ret
+  local dan_hack = ret - 2 * negate * ret
+  return dan_hack / (2 * 3.14159265358979)
+end
+
 top_joint = 0
+mid_joint = 0
 bottom_joint = 0
 
 joint_x = 0
 joint_y = 0
+mid_x = 0
+mid_y = 0
 foot_x = 0
 foot_y = 0
 
 ::_::
 cls(0)
+
+-- guidelines
+line(body_x, 0, body_x, 128, 5)
+line(body_x - 128, body_y - 128, body_x + 128, body_y + 128, 5)
+line(body_x + 128, body_y - 128, body_x - 128, body_y + 128, 5)
+line(0, body_y, 128, body_y, 5)
 
 mouse_x = stat(32)-1
 mouse_y = stat(33)-1
@@ -118,15 +144,15 @@ mouse_y = stat(33)-1
 t += 1
 
 vel = 2 + sin(t / 53)
---vel = 0
+vel = 0
 
 body_y = body_y_0 + 4 * vel
 
 
-update_foot(foot, vel)
+--update_foot(foot, vel)
 
---foot.x = mouse_x
---foot.y = mouse_y
+foot.x = mouse_x
+foot.y = mouse_y
 
 --line(body_x, body_y, foot.x, foot.y, 5)
 
@@ -142,28 +168,51 @@ local y_off = (foot.y - body_y)
 local x_off2 = x_off * x_off
 local y_off2 = y_off * y_off
 
-local bottom_joint_new = -acos((x_off2 + y_off2 - top_len2 - bottom_len2) / (2 * top_len * bottom_len))
+local alpha = acos((x_off2 + y_off2 - top_len2 - mid_len2) / (2 * top_len * mid_len))
+local beta = asin((mid_len * sin(alpha)) / sqrt(x_off2 + y_off2))
+top_joint = atan2(x_off, y_off) - beta
+--top_joint = atan2(x_off, y_off) - beta
+mid_joint = ( 0.5 - alpha)
+--bottom_joint = 
+--local wrist_joint_new = 
 
---bottom_joint = lerp_angle(bottom_joint_new, bottom_joint, 3)
-bottom_joint = bottom_joint_new
-local top_joint_new = atan2(y_off, x_off) - atan2(bottom_len * sin(bottom_joint), top_len + bottom_len * cos(bottom_joint))
---top_joint = lerp_angle(top_joint_new, top_joint, 3)
-top_joint = top_joint_new
+-----local bottom_joint_new = -acos((x_off2 + y_off2 - top_len2 - bottom_len2) / (2 * top_len * bottom_len))
+-----
+-------bottom_joint = lerp_angle(bottom_joint_new, bottom_joint, 3)
+-----bottom_joint = bottom_joint_new
+-----local top_joint_new = atan2(y_off, x_off) - atan2(bottom_len * sin(bottom_joint), top_len + bottom_len * cos(bottom_joint))
+-------top_joint = lerp_angle(top_joint_new, top_joint, 3)
+-----top_joint = top_joint_new
 
 local pos_k = 2
 
-joint_x = lerp(body_x + top_len * cos(-top_joint), joint_x, pos_k)
-joint_y = lerp(body_y + top_len * sin(-top_joint), joint_y, pos_k)
+joint_x = lerp(body_x + top_len * cos(top_joint), joint_x, pos_k)
+joint_y = lerp(body_y + top_len * sin(top_joint), joint_y, pos_k)
 
-foot_x = lerp(joint_x + bottom_len * cos(-top_joint + bottom_joint), foot_x, pos_k)
-foot_y = lerp(joint_y + bottom_len * sin(-top_joint + bottom_joint), foot_y, pos_k)
+mid_x = lerp(joint_x + mid_len * cos(-top_joint + mid_joint), mid_x, pos_k)
+mid_y = lerp(joint_y + mid_len * sin(-top_joint + mid_joint), mid_y, pos_k)
 
-line(body_x, body_y, joint_x, joint_y, 3)
-line(joint_x, joint_y, foot_x, foot_y, 1)
+bottom_joint = atan2(foot.x - mid_x, foot.y - mid_y)
+--bottom_joint = 0.5
+
+foot_x = lerp(mid_x + bottom_len * cos(bottom_joint), foot_x, pos_k)
+foot_y = lerp(mid_y + bottom_len * sin(bottom_joint), foot_y, pos_k)
+--foot_x = lerp(mid_x + bottom_len * cos(-top_joint + mid_joint + bottom_joint), foot_x, pos_k)
+--foot_y = lerp(mid_y + bottom_len * sin(-top_joint + mid_joint + bottom_joint), foot_y, pos_k)
+
+--foot_x = mouse_x
+--foot_y = mouse_y
+
+line(body_x, body_y, joint_x, joint_y, 12)
+line(joint_x, joint_y, mid_x, mid_y, 14)
+circ(mid_x, mid_y, 2, 15)
+line(mid_x, mid_y, foot_x, foot_y, 10)
+circ(mouse_x, mouse_y, 2, 6)
+--line(mid_x, mid_x, foot_x, foot_y, 1)
 --line(joint_x, joint_y, foot.x, foot.y, 7)
 
 
-circ(body_x, body_y, 4, 2)
+circ(body_x, body_y, 4, 11)
 body_x += vel
 
 if body_x > 128 then
