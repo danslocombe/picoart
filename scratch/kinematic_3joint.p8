@@ -11,27 +11,27 @@ body_y = body_y_0
 
 floor = body_y + 38
 
-foot = {
-    x=body_x,
-    y=floor,
-    lerp_r = 0,
-    lerp_k = 0,
-    lerp_cx = 0,
-    target_x = nil,
-    target_y = nil,
-    --top_bone_angle = 0
-}
+function make_foot(x)
+    return {
+        x=x,
+        y=floor,
+        lerp_r = 0,
+        lerp_k = 0,
+        lerp_cx = 0,
+        target_x = nil,
+        target_y = nil,
+    }
+end
 
-foot2 = {
-    x=body_x+25,
-    y=floor,
-    lerp_r = 0,
-    lerp_k = 0,
-    lerp_cx = 0,
-    target_x = nil,
-    target_y = nil,
-    --top_bone_angle = 0
-}
+feet = {}
+foot = make_foot(body_x)
+add(feet, foot)
+foot2 = make_foot(body_x + 25)
+add(feet, foot2)
+foot3 = make_foot(body_x + 32)
+add(feet, foot3)
+foot4 = make_foot(body_x + 48)
+add(feet, foot4)
 
 
 function dist2(x, y, x2, y2)
@@ -58,37 +58,36 @@ local bottom_len2 = bottom_len * bottom_len
 local total_leg_len = top_len + mid_len + bottom_len
 local total_leg_len_2 = total_leg_len * total_leg_len
 
-leg = {
-    top_joint = 0,
-    mid_joint = 0,
-    bottom_joint = 0,
+function make_leg()
+    return {
+        top_joint = 0,
+        mid_joint = 0,
+        bottom_joint = 0,
 
-    joint_x = 0,
-    joint_y = 0,
-    mid_x = 0,
-    mid_y = 0,
-    foot_x = 0,
-    foot_y = 0,
-}
+        joint_x = 0,
+        joint_y = 0,
+        mid_x = 0,
+        mid_y = 0,
+        foot_x = 0,
+        foot_y = 0,
+    }
+end
 
-leg2 = {
-    top_joint = 0,
-    mid_joint = 0,
-    bottom_joint = 0,
+legs = {}
+leg = make_leg()
+add(legs, leg)
+leg2 = make_leg()
+add(legs, leg2)
+leg3 = make_leg()
+add(legs, leg3)
+leg4 = make_leg()
+add(legs, leg4)
 
-    joint_x = 0,
-    joint_y = 0,
-    mid_x = 0,
-    mid_y = 0,
-    foot_x = 0,
-    foot_y = 0,
-}
-
-function update_foot(foot, vel)
+function update_foot(foot, vel, body_x, body_y)
 
     if foot.target_x == nil then
         local d2 = dist2(body_x, body_y, foot.x, foot.y)
-        local stretch_factor = 0.74
+        local stretch_factor = 0.64
         --print(sqrt(d2), 64, 10, 8)
         --print(sqrt(total_leg_len_2), 64, 20, 8)
         --local k = 8 * vel
@@ -137,7 +136,7 @@ function update_foot(foot, vel)
     --foot.top_bone_angle = lerp(ideal_angle, foot.top_bone_angle, 3)
 end
 
-function update_leg(foot, leg)
+function update_leg(foot, leg, body_x, body_y)
     local x_off_end = (foot.x - body_x)
     local y_off_end = (foot.y - body_y)
 
@@ -154,10 +153,8 @@ function update_leg(foot, leg)
 
     --print(alpha_num, 80, 10, 7)
     --print(alpha_denom, 80, 20, 7)
-    print(alpha_num / alpha_denom, 80, 10, 7)
 
     local alpha = acos(alpha_num / alpha_denom)
-    print(alpha, 80, 20, 7)
 
     local beta_num = (mid_len * sin(alpha))
     local beta_denom = sqrt(x3_off2 + y3_off2)
@@ -165,8 +162,8 @@ function update_leg(foot, leg)
     --print(beta_denom, 80, 90, 7)
     local beta = asin( beta_num / beta_denom)
     --print(beta, 80, 110, 7)
-    leg.top_joint = atan2(x3_off, y3_off) + beta
-    leg.mid_joint = ( - alpha )
+    leg.top_joint = atan2(x3_off, y3_off) - beta
+    leg.mid_joint = ( alpha )
 
     local pos_k = 2
 
@@ -244,36 +241,38 @@ body_y = body_y_0 + 4 * vel
 
 --foot.x = mouse_x
 --foot.y = mouse_y
-update_foot(foot, vel)
-update_foot(foot2, vel)
-update_leg(foot, leg)
-update_leg(foot2, leg2)
+update_foot(foot, vel, body_x - 10, body_y)
+update_foot(foot2, vel, body_x - 10, body_y)
+update_leg(foot, leg, body_x - 10, body_y)
+update_leg(foot2, leg2, body_x - 10, body_y)
 
-circ(body_x, body_y, 4, 11)
+update_foot(foot3, vel, body_x + 10, body_y)
+update_foot(foot4, vel, body_x + 10, body_y)
+update_leg(foot3, leg3, body_x + 10, body_y)
+update_leg(foot4, leg4, body_x + 10, body_y)
+
+circ(body_x - 10, body_y, 4, 11)
+circ(body_x + 10, body_y, 4, 11)
 body_x += vel
 
-if body_x > 128 then
+ 
+wrap = 128 + 24
+if body_x > wrap then
     body_x = 0
-    if foot.target_x != nil then
-        foot.target_x -= 128
-        foot.lerp_cx -= 128
+    for i,o in pairs(feet) do
+        if o.target_x != nil then
+            o.target_x -= wrap
+            o.lerp_cx -= wrap
+        end
+        o.x -= wrap
+        o.y = floor
     end
-    --foot.target_y = nil
-    foot.x -= 128
-    foot.y = floor
-    if foot2.target_x != nil then
-        foot2.target_x -= 128
-        foot2.lerp_cx -= 128
+
+    for i,o in pairs(legs) do
+        o.joint_x = 0
+        o.foot_x = 0
+        o.mid_x = 0
     end
-    --foot2.target_y = nil
-    foot2.x -= 128
-    foot2.y = floor
-    leg.joint_x = 0
-    leg.foot_x = 0
-    leg.mid_x = 0
-    leg2.joint_x = 0
-    leg2.foot_x = 0
-    leg2.mid_x = 0
 end
 
 flip()
