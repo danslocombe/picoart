@@ -6,12 +6,12 @@ __lua__
 poke(0x5f2d, 1)
 
 body_x = 64
-body_y_0 = 64
+body_y_0 = 44
 body_y = body_y_0
 
 foot = {
     x=body_x,
-    y=body_y+24,
+    y=body_y+34,
     target_x = nil,
     target_y = nil,
     --top_bone_angle = 0
@@ -133,11 +133,11 @@ foot_y = 0
 cls(0)
 
 -- guidelines
-line(body_x, 0, body_x, 128, 5)
-line(body_x - 128, body_y - 128, body_x + 128, body_y + 128, 5)
-line(body_x + 128, body_y - 128, body_x - 128, body_y + 128, 5)
-line(0, body_y, 128, body_y, 5)
-circ(body_x, body_y, total_leg_len, 5)
+--line(body_x, 0, body_x, 128, 5)
+--line(body_x - 128, body_y - 128, body_x + 128, body_y + 128, 5)
+--line(body_x + 128, body_y - 128, body_x - 128, body_y + 128, 5)
+--line(0, body_y, 128, body_y, 5)
+--circ(body_x, body_y, total_leg_len, 5)
 
 mouse_x = stat(32)-1
 mouse_y = stat(33)-1
@@ -145,19 +145,20 @@ mouse_y = stat(33)-1
 t += 1
 
 vel = 2 + sin(t / 53)
-vel = 0
+--vel = 0
 
 body_y = body_y_0 + 4 * vel
 
 
-foot.x = mouse_x
-foot.y = mouse_y
+--foot.x = mouse_x
+--foot.y = mouse_y
+update_foot(foot, vel)
 
 
 local x_off_end = (foot.x - body_x)
 local y_off_end = (foot.y - body_y)
 
-local gamma = atan2(x_off_end, y_off_end) + 0.2 * sin(t / 100)
+local gamma = atan2(x_off_end, y_off_end) -- + 0.2 * sin(t / 100)
 
 local x3_off = ((foot.x - bottom_len * cos(gamma)) - body_x)
 local y3_off = ((foot.y - bottom_len * sin(gamma)) - body_y)
@@ -204,7 +205,9 @@ line(body_x, body_y, joint_x, joint_y, 12)
 line(joint_x, joint_y, mid_x, mid_y, 14)
 circ(mid_x, mid_y, 2, 15)
 line(mid_x, mid_y, foot_x, foot_y, 10)
-circ(mouse_x, mouse_y, 2, 6)
+
+--circ(mouse_x, mouse_y, 2, 6)
+circ(foot.x, foot.y, 2, 6)
 
 
 circ(body_x, body_y, 4, 11)
@@ -217,6 +220,7 @@ if body_x > 128 then
     foot.x = 0
     joint_x = 0
     foot_x = 0
+    mid_x = 0
 end
 
 flip()
