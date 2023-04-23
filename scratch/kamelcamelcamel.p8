@@ -2,17 +2,33 @@ pico-8 cartridge // http://www.pico-8.com
 version 36
 __lua__
 
--- taken from
+-- inverse kinematics taken from
 -- https://hive.blog/hive-196387/@juecoree/forward-and-reverse-kinematics-for-3r-planar-manipulator
-
--- mouse support
-poke(0x5f2d, 1)
 
 body_x = 10
 body_y_0 = 40
 body_y = body_y_0
 
+head_x = body_x
+head_y = body_y
+
 floor = body_y + 40
+
+function draw_bezier(x0, y0, x1, y1, x2, y2, x3, y3, k, col)
+    for i = 0,k do
+        local t = i/k
+        local t2 = t*t
+        local t3 = t2*t
+        local inv_t = 1-t
+        local inv_t2 = inv_t * inv_t
+        local inv_t3 = inv_t2 * inv_t
+        local k1 = 3*inv_t2*t
+        local k2 = 3*inv_t*t2
+        local x = inv_t3*x0 + k1*x1 + k2*x2 + t3*x3
+        local y = inv_t3*y0 + k1*y1 + k2*y2 + t3*y3
+        pset(x, y, col)
+    end
+end
 
 function make_foot(x)
     return {
@@ -223,16 +239,6 @@ end
 ::_::
 cls(0)
 
--- guidelines
---line(body_x, 0, body_x, 128, 5)
---line(body_x - 128, body_y - 128, body_x + 128, body_y + 128, 5)
---line(body_x + 128, body_y - 128, body_x - 128, body_y + 128, 5)
---line(0, body_y, 128, body_y, 5)
---circ(body_x, body_y, total_leg_len, 5)
-
-mouse_x = stat(32)-1
-mouse_y = stat(33)-1
-
 t += 1
 
 --vel = 2 + sin(t / 53)
@@ -258,25 +264,55 @@ update_leg(foot4, leg4, body_x + body_len_r, body_y, body_x)
 
 circ(body_x - body_len_r, body_y, 4, 11)
 circ(body_x + body_len_r, body_y, 4, 11)
+
+circ(body_x - body_len_r + 4, body_y - 2, 8, 12)
+circ(body_x + body_len_r - 2, body_y - 2, 8, 12)
+
+for i = 0,2*body_len_r do
+    local xx = body_x - body_len_r + i
+    pset(xx, body_y - 4 - 8 * sin(i / (4 * body_len_r)), 12)
+end
+
+for i = 0,2*body_len_r - 10 do
+    local xx = body_x - body_len_r + 5 + i + 2 * vel - 2
+    pset(xx, body_y - 8 + 6 * sin(i / (4 * body_len_r - 20)), 12)
+end
+
+head_x = lerp(body_x + 28 + vel * 10, head_x, 3)
+head_y = lerp(body_y - 23 + vel * 2, head_y, 3)
+circ(head_x, head_y, 3, 7)
+circ(head_x+4, head_y, 2, 7)
+circ(head_x-2, head_y-2, 2, 7)
+
+draw_bezier(body_x + body_len_r, body_y-8, body_x + body_len_r * 2, body_y-8, head_x-2, head_y + 8, head_x-2, head_y, 24, 3)
+draw_bezier(body_x + body_len_r, body_y, body_x + body_len_r * 2, body_y, head_x+2, head_y + 8, head_x+2, head_y, 24, 3)
+--for x = body_x + body_len_r,head_x do
+--    local i = x - (body_x + body_len_r)
+--    local i_norm = i / (head_x - (body_x + body_len_r))
+--    y = body_y + (head_y - body_y) * i_norm
+--    pset(x, y, 3)
+--end
+
 body_x += vel
 
  
-wrap = 128 + 24
-if body_x > wrap then
-    body_x = 0
+wrap = 128 + 54
+if body_x > 128 + 24 then
+    head_x -= wrap
+    body_x -= wrap
     for i,o in pairs(feet) do
         if o.target_x != nil then
             o.target_x -= wrap
             o.lerp_cx -= wrap
         end
         o.x -= wrap
-        o.y = floor
+        --o.y = floor
     end
 
     for i,o in pairs(legs) do
-        o.joint_x = 0
-        o.foot_x = 0
-        o.mid_x = 0
+        o.joint_x -= wrap
+        o.foot_x -= wrap
+        o.mid_x -= wrap
     end
 end
 
