@@ -30,7 +30,28 @@ function draw_bezier(x0, y0, x1, y1, x2, y2, x3, y3, k, col)
     end
 end
 
-function make_foot(x)
+function fill_double_bez(c0, c1, k, col)
+    for i = 0,k do
+        local t = i/k
+        local t2 = t*t
+        local t3 = t2*t
+        local inv_t = 1-t
+        local inv_t2 = inv_t * inv_t
+        local inv_t3 = inv_t2 * inv_t
+        local k1 = 3*inv_t2*t
+        local k2 = 3*inv_t*t2
+
+        local x0 = inv_t3*c0.x0 + k1*c0.x1 + k2*c0.x2 + t3*c0.x3
+        local y0 = inv_t3*c0.y0 + k1*c0.y1 + k2*c0.y2 + t3*c0.y3
+
+        local x1 = inv_t3*c1.x0 + k1*c1.x1 + k2*c1.x2 + t3*c1.x3
+        local y1 = inv_t3*c1.y0 + k1*c1.y1 + k2*c1.y2 + t3*c1.y3
+
+        line(x0, y0, x1, y1, col)
+    end
+end
+
+function make_foot(x, front)
     return {
         x=x,
         y=floor,
@@ -39,17 +60,18 @@ function make_foot(x)
         lerp_cx = 0,
         target_x = nil,
         target_y = nil,
+        front = front,
     }
 end
 
 feet = {}
-foot = make_foot(body_x)
+foot = make_foot(body_x, false)
 add(feet, foot)
-foot2 = make_foot(body_x + 25)
+foot2 = make_foot(body_x + 25, false)
 add(feet, foot2)
-foot3 = make_foot(body_x + 32)
+foot3 = make_foot(body_x + 32, true)
 add(feet, foot3)
-foot4 = make_foot(body_x + 48)
+foot4 = make_foot(body_x + 48, true)
 add(feet, foot4)
 
 
@@ -77,7 +99,7 @@ local bottom_len2 = bottom_len * bottom_len
 local total_leg_len = top_len + mid_len + bottom_len
 local total_leg_len_2 = total_leg_len * total_leg_len
 
-function make_leg()
+function make_leg(front)
     return {
         top_joint = 0,
         mid_joint = 0,
@@ -89,17 +111,18 @@ function make_leg()
         mid_y = 0,
         foot_x = 0,
         foot_y = 0,
+        front = front,
     }
 end
 
 legs = {}
-leg = make_leg()
+leg = make_leg(false)
 add(legs, leg)
-leg2 = make_leg()
+leg2 = make_leg(false)
 add(legs, leg2)
-leg3 = make_leg()
+leg3 = make_leg(true)
 add(legs, leg3)
-leg4 = make_leg()
+leg4 = make_leg(true)
 add(legs, leg4)
 
 function update_foot(foot, vel, body_x, body_y)
@@ -107,6 +130,11 @@ function update_foot(foot, vel, body_x, body_y)
     if foot.target_x == nil then
         local d2 = dist2(body_x, body_y, foot.x, foot.y)
         local stretch_factor = 0.64
+        if foot.front then
+            stretch_factor *= 0.2
+        else
+            stretch_factor *= 0.6
+        end
         --print(sqrt(d2), 64, 10, 8)
         --print(sqrt(total_leg_len_2), 64, 20, 8)
         --local k = 8 * vel
@@ -124,6 +152,9 @@ function update_foot(foot, vel, body_x, body_y)
             --foot.target_x = body_x + 13 * vel
             --local hack_factor = 1.5 -- + rnd(1)
             local hack_factor = 1.7
+            if foot.front then
+                hack_factor *= 1.1
+            end
             foot.target_x = body_x + hack_factor * in_front
             foot.target_y = foot.y
 
@@ -158,6 +189,9 @@ end
 
 function update_leg(foot, leg, body_x, body_y, actual_body_x)
     local x_off_end = (foot.x - actual_body_x)
+    if leg.front then
+        x_off_end = (foot.x - body_x)
+    end
     local y_off_end = (foot.y - body_y)
 
     local gamma = atan2(x_off_end, y_off_end) -- + 0.2 * sin(t / 100)
@@ -242,7 +276,9 @@ cls(0)
 t += 1
 
 --vel = 2 + sin(t / 53)
-vel = 2 + 0.5 * sin(t / 53)
+
+vel = 2 + 0.2 * sin(t / 53)
+
 --vel = 1.5
 --vel = 0
 
@@ -286,6 +322,28 @@ circ(head_x-2, head_y-2, 2, 7)
 
 draw_bezier(body_x + body_len_r, body_y-8, body_x + body_len_r * 2, body_y-8, head_x-2, head_y + 8, head_x-2, head_y, 24, 3)
 draw_bezier(body_x + body_len_r, body_y, body_x + body_len_r * 2, body_y, head_x+2, head_y + 8, head_x+2, head_y, 24, 3)
+
+--fill_double_bez({
+--    x0 = body_x + body_len_r,
+--    y0 = body_y-8,
+--    x1 = body_x + body_len_r * 2,
+--    y1 = body_y-8, 
+--    x2 = head_x-2,
+--    y2 = head_y + 8,
+--    x3 = head_x-2,
+--    y3 = head_y
+--},
+--{
+--    x0 = body_x + body_len_r,
+--    y0 = body_y,
+--    x1 = body_x + body_len_r * 2,
+--    y1 = body_y, 
+--    x2 = head_x-2,
+--    y2 = head_y + 8,
+--    x3 = head_x-2,
+--    y3 = head_y
+--}, 24, 3)
+
 --for x = body_x + body_len_r,head_x do
 --    local i = x - (body_x + body_len_r)
 --    local i_norm = i / (head_x - (body_x + body_len_r))
@@ -296,7 +354,7 @@ draw_bezier(body_x + body_len_r, body_y, body_x + body_len_r * 2, body_y, head_x
 body_x += vel
 
  
-wrap = 128 + 54
+wrap = 128 + 74
 if body_x > 128 + 24 then
     head_x -= wrap
     body_x -= wrap
