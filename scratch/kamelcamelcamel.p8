@@ -65,14 +65,10 @@ function make_foot(x, front)
 end
 
 feet = {}
-foot = make_foot(body_x, false)
-add(feet, foot)
-foot2 = make_foot(body_x + 25, false)
-add(feet, foot2)
-foot3 = make_foot(body_x + 32, true)
-add(feet, foot3)
-foot4 = make_foot(body_x + 48, true)
-add(feet, foot4)
+add(feet, make_foot(body_x, false))
+add(feet, make_foot(body_x + 25, false))
+add(feet, make_foot(body_x + 32, true))
+add(feet, make_foot(body_x + 48, true))
 
 
 function dist2(x, y, x2, y2)
@@ -116,14 +112,10 @@ function make_leg(front)
 end
 
 legs = {}
-leg = make_leg(false)
-add(legs, leg)
-leg2 = make_leg(false)
-add(legs, leg2)
-leg3 = make_leg(true)
-add(legs, leg3)
-leg4 = make_leg(true)
-add(legs, leg4)
+add(legs, make_leg(false))
+add(legs, make_leg(false))
+add(legs, make_leg(true))
+add(legs, make_leg(true))
 
 function update_foot(foot, vel, body_x, body_y)
 
@@ -288,15 +280,15 @@ body_y = body_y_0 + 6 * vel
 --foot.x = mouse_x
 --foot.y = mouse_y
 body_len_r = 16
-update_foot(foot, vel, body_x - body_len_r, body_y)
-update_foot(foot2, vel, body_x - body_len_r, body_y)
-update_leg(foot, leg, body_x - body_len_r, body_y, body_x)
-update_leg(foot2, leg2, body_x - body_len_r, body_y, body_x)
+update_foot(feet[1], vel, body_x - body_len_r, body_y)
+update_foot(feet[2], vel, body_x - body_len_r, body_y)
+update_leg(feet[1], legs[1], body_x - body_len_r, body_y, body_x)
+update_leg(feet[2], legs[2], body_x - body_len_r, body_y, body_x)
 
-update_foot(foot3, vel, body_x + body_len_r, body_y)
-update_foot(foot4, vel, body_x + body_len_r, body_y)
-update_leg(foot3, leg3, body_x + body_len_r, body_y, body_x)
-update_leg(foot4, leg4, body_x + body_len_r, body_y, body_x)
+update_foot(feet[3], vel, body_x + body_len_r, body_y)
+update_foot(feet[4], vel, body_x + body_len_r, body_y)
+update_leg(feet[3], legs[3], body_x + body_len_r, body_y, body_x)
+update_leg(feet[4], legs[4], body_x + body_len_r, body_y, body_x)
 
 circ(body_x - body_len_r, body_y, 4, 11)
 circ(body_x + body_len_r, body_y, 4, 11)
