@@ -14,6 +14,8 @@ head_y = body_y
 
 floor = body_y + 40
 
+particles = {}
+
 function draw_bezier(x0, y0, x1, y1, x2, y2, x3, y3, k, col)
     for i = 0,k do
         local t = i/k
@@ -61,6 +63,7 @@ function make_foot(x, front)
         target_x = nil,
         target_y = nil,
         front = front,
+        stomped_this_cycle = false,
     }
 end
 
@@ -168,6 +171,17 @@ function update_foot(foot, vel, body_x, body_y)
             foot.lerp_k = 0
             foot.target_x = nil
             foot.target_y = nil
+
+            for i = 0,4 do
+                local d = 3
+                local theta = rnd()
+                add(particles, {
+                    x = foot.x + d * cos(theta),
+                    y = foot.y + d * sin(theta),
+                    yvel = -0.6,
+                    size = 3,
+                })
+            end
         end
     end
 
@@ -364,6 +378,18 @@ if body_x > 128 + 24 then
         o.foot_x -= wrap
         o.mid_x -= wrap
     end
+end
+
+for i,p in pairs(particles) do
+    p.yvel += 0.04
+    p.y += p.yvel
+    p.size = p.size * 0.9
+    if p.size < 0.01 or p.yvel > 0.1 then
+        del(particles, p)
+    end
+
+    local half_size = p.size * 0.5
+    rectfill(p.x -half_size, p.y - half_size, p.x + half_size, p.y + half_size, 7)
 end
 
 flip()
