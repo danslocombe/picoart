@@ -11,7 +11,7 @@ particles = {}
 animals = {}
 
 function make_camel()
-    local body_x = 10
+    local body_x = 90
     local body_y_0 = 40
     local body_y = body_y_0
 
@@ -57,6 +57,110 @@ function make_camel()
         total_leg_len_2 = total_leg_len * total_leg_len,
 
         body_len_r = body_len_r,
+
+        feet = feet,
+        legs = legs,
+    }
+end
+
+function make_bipedal()
+    local body_x = 10
+    local body_y_0 = 30
+    local body_y = body_y_0
+
+    local head_x = body_x
+    local head_y = body_y
+
+    local top_len = 6
+    local mid_len = 16
+    local bottom_len = 24
+
+    local total_leg_len = top_len + mid_len + bottom_len
+    local body_len_r = 5
+
+
+    local feet = {}
+    add(feet, make_foot(body_x, false))
+    add(feet, make_foot(body_x + 25, false))
+
+    local legs = {}
+    add(legs, make_leg(false))
+    add(legs, make_leg(true))
+
+    return {
+        body_x = body_x,
+        body_y_0 = body_y_0,
+        body_y = body_y,
+
+        head_x = head_x,
+        head_y = head_y,
+
+        top_len = top_len,
+        mid_len = mid_len,
+        bottom_len = bottom_len,
+        top_len2 = top_len * top_len,
+        mid_len2 = mid_len * mid_len,
+        bottom_len2 = bottom_len * bottom_len,
+
+        total_leg_len = total_leg_len,
+        total_leg_len_2 = total_leg_len * total_leg_len,
+
+        body_len_r = body_len_r,
+
+        feet = feet,
+        legs = legs,
+    }
+end
+
+function make_pede()
+    local body_x = 10
+    local body_y_0 = 55
+    local body_y = body_y_0
+
+    local head_x = body_x
+    local head_y = body_y
+
+    local top_len = 32
+    local mid_len = 16
+    local bottom_len = 4
+
+    local total_leg_len = top_len + mid_len + bottom_len
+    local body_len_r = 5
+
+    local leg_pair_count = 1
+
+    local feet = {}
+    local legs = {}
+
+    local offset = 0
+    for i=0,leg_pair_count do
+        add(feet, make_foot(body_x + offset, false))
+        add(feet, make_foot(body_x + offset + 25, false))
+        add(legs, make_leg(false))
+        add(legs, make_leg(true))
+        offset -= 12
+    end
+
+    return {
+        body_x = body_x,
+        body_y_0 = body_y_0,
+        body_y = body_y,
+
+        head_x = head_x,
+        head_y = head_y,
+
+        top_len = top_len,
+        mid_len = mid_len,
+        bottom_len = bottom_len,
+        top_len2 = top_len * top_len,
+        mid_len2 = mid_len * mid_len,
+        bottom_len2 = bottom_len * bottom_len,
+
+        total_leg_len = total_leg_len,
+        total_leg_len_2 = total_leg_len * total_leg_len,
+
+        body_len_r = body_len_r,
+        leg_pair_count = leg_pair_count,
 
         feet = feet,
         legs = legs,
@@ -217,7 +321,82 @@ function update_leg(animal, foot, leg, body_x, body_y, actual_body_x)
     line(leg.mid_x, leg.mid_y, leg.foot_x, leg.foot_y, 10)
 end
 
-function update_animal(animal, t)
+function update_bipedal(animal, t)
+    vel = 2 + 0.2 * sin(t / 53)
+    animal.body_y = animal.body_y_0 + 6 * vel
+
+    update_foot(animal, animal.feet[1], vel, animal.body_x, animal.body_y)
+    update_foot(animal, animal.feet[2], vel, animal.body_x, animal.body_y)
+    update_leg(animal, animal.feet[1], animal.legs[1], animal.body_x, animal.body_y - 30, animal.body_x)
+    update_leg(animal, animal.feet[2], animal.legs[2], animal.body_x, animal.body_y - 30, animal.body_x)
+
+    for i = 0,2*animal.body_len_r do
+        local xx = animal.body_x - animal.body_len_r + i
+        pset(xx, animal.body_y - 4 - 8 * sin(i / (4 * animal.body_len_r)), 12)
+    end
+
+    for i = 0,2*animal.body_len_r - 10 do
+        local xx = animal.body_x - animal.body_len_r + 5 + i + 2 * vel - 2
+        pset(xx, animal.body_y - 8 + 6 * sin(i / (4 * animal.body_len_r - 20)), 12)
+    end
+
+    animal.head_x = lerp(animal.body_x + (vel - 1.5) * 15, animal.head_x, 3)
+    animal.head_y = lerp(animal.body_y - 23 + vel * 2, animal.head_y, 3)
+    circ(animal.head_x, animal.head_y, 3, 7)
+    circ(animal.head_x+4, animal.head_y, 2, 7)
+    circ(animal.head_x-2, animal.head_y-2, 2, 7)
+
+    draw_bezier(animal.body_x + animal.body_len_r, animal.body_y-8, animal.body_x + animal.body_len_r * 2, animal.body_y-8, animal.head_x-2, animal.head_y + 8, animal.head_x-2, animal.head_y, 24, 3)
+    draw_bezier(animal.body_x + animal.body_len_r, animal.body_y, animal.body_x + animal.body_len_r * 2, animal.body_y, animal.head_x+2, animal.head_y + 8, animal.head_x+2, animal.head_y, 24, 3)
+
+    animal.body_x += vel
+    wrap_animal(animal)
+end
+
+function update_pede(animal, t)
+    vel = 2 + 0.2 * sin(t / 53)
+    animal.body_y = animal.body_y_0 + 6 * vel
+
+    local offset = 0
+    for i=0,animal.leg_pair_count do
+        local leg_body_y = animal.body_y - 20
+        local index = 1 + 2*i
+        update_foot(animal, animal.feet[index], vel, animal.body_x + offset, leg_body_y)
+        update_foot(animal, animal.feet[index+1], vel, animal.body_x + offset, leg_body_y)
+        update_leg(animal, animal.feet[index], animal.legs[index], animal.body_x + offset, leg_body_y, animal.body_x + offset)
+        update_leg(animal, animal.feet[index+1], animal.legs[index+1], animal.body_x + offset, leg_body_y, animal.body_x + offset)
+        offset -= 12
+    end
+
+    --update_foot(animal, animal.feet[1], vel, animal.body_x, animal.body_y)
+    --update_foot(animal, animal.feet[2], vel, animal.body_x, animal.body_y)
+    --update_leg(animal, animal.feet[1], animal.legs[1], animal.body_x, animal.body_y, animal.body_x)
+    --update_leg(animal, animal.feet[2], animal.legs[2], animal.body_x, animal.body_y, animal.body_x)
+
+    for i = 0,2*animal.body_len_r do
+        local xx = animal.body_x - animal.body_len_r + i
+        pset(xx, animal.body_y - 4 - 8 * sin(i / (4 * animal.body_len_r)), 12)
+    end
+
+    for i = 0,2*animal.body_len_r - 10 do
+        local xx = animal.body_x - animal.body_len_r + 5 + i + 2 * vel - 2
+        pset(xx, animal.body_y - 8 + 6 * sin(i / (4 * animal.body_len_r - 20)), 12)
+    end
+
+    animal.head_x = lerp(animal.body_x + (vel) * 15, animal.head_x, 3)
+    animal.head_y = lerp(animal.body_y - 2 + vel * 2, animal.head_y, 3)
+    circ(animal.head_x, animal.head_y, 3, 7)
+    circ(animal.head_x+4, animal.head_y, 2, 7)
+    circ(animal.head_x-2, animal.head_y-2, 2, 7)
+
+    draw_bezier(animal.body_x + animal.body_len_r, animal.body_y, animal.body_x + animal.body_len_r * 2, animal.body_y-8, animal.head_x-2, animal.head_y + 8, animal.head_x-2, animal.head_y, 24, 3)
+    draw_bezier(animal.body_x + animal.body_len_r, animal.body_y+8, animal.body_x + animal.body_len_r * 2, animal.body_y, animal.head_x+2, animal.head_y + 8, animal.head_x+2, animal.head_y, 24, 3)
+
+    animal.body_x += vel
+    wrap_animal(animal)
+end
+
+function update_camel(animal, t)
     vel = 2 + 0.2 * sin(t / 53)
     animal.body_y = animal.body_y_0 + 6 * vel
 
@@ -285,7 +464,10 @@ function update_animal(animal, t)
     --end
 
     animal.body_x += vel
-    
+    wrap_animal(animal)
+end
+
+function wrap_animal(animal)
     wrap = 128 + 74
     if animal.body_x > 128 + 24 then
         animal.head_x -= wrap
@@ -387,13 +569,17 @@ function lerp_angle(x, x0, k)
     return lerp(x + 1, x0 + 1, k) - 1
 end
 
-local camel = make_camel()
+--local camel = make_camel()
+--local bipedal = make_bipedal()
+local pede = make_pede()
 
 ::_::
 cls(0)
 
 t += 1
-update_animal(camel, t)
+--update_camel(camel, t)
+--update_bipedal(bipedal, t)
+update_pede(pede, t)
 
 for i,p in pairs(particles) do
     p.yvel += 0.04
