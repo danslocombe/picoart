@@ -14,6 +14,8 @@ selectable_node = nil
 
 ROPE_ITERS = 8
 
+t = 0
+
 function project_dist_towards(x, y, tx, ty, dist)
     local dx = tx - x
     local dy = ty - y
@@ -86,6 +88,7 @@ end
 temp = 0
 
 function _update60()
+    t += 1
 
     if (btn(4)) then
         temp += 0.2
@@ -238,23 +241,66 @@ function _draw()
         end
         for i,o in pairs(nodes) do
             circ(o.x, o.y, 2, 5)
-            local efk = 16
-            line(o.x, o.y, o.x + efk * o.external_force_x, o.y + efk * o.external_force_y, 11)
+            --local efk = 16
+            --line(o.x, o.y, o.x + efk * o.external_force_x, o.y + efk * o.external_force_y, 11)
         end
         if selectable_node != nil then
             circ(selectable_node.x, selectable_node.y, 3, 4)
         end
+
+        local cx = 0
+        local cy = 0
+        for i,o in pairs(nodes) do
+            cx += o.x
+            cy += o.y
+        end
+        cx = cx / #nodes
+        cy = cy / #nodes
+
+        local eye_spr = 2 + (t/3) % 4
+
+        if ((flr(t / 5)) % 31) == 0 then
+            eye_spr = 6
+        end
+
+        if (temp < 0.4) then
+            eye_spr = 7 + (t/3) % 2
+        end
+
+        if (temp < 0.1) then
+            eye_spr = 9
+            if ((flr(t / 5)) % 31) == 0 then
+                eye_spr = 10
+            end
+        end
+
+        palt(0, false)
+        palt(15, true)
+        local left_eye_x = cx - 4
+        local right_eye_x = cx + 4
+        local eye_y = cy - 2
+        spr(eye_spr, left_eye_x - 4, eye_y - 4)
+        spr(eye_spr, right_eye_x - 4, eye_y - 4)
+
+        if (temp > 0.5) then
+            --rectfill(left_eye_x - 2, eye_y + 4, left_eye_x + 2, eye_y + 5, 14)
+            --rectfill(right_eye_x - 2, eye_y + 4, right_eye_x + 2, eye_y + 5, 14)
+        end
+
         local mx = stat(32)
         local my = stat(33)
         --circfill(mx, my, 2, 2)
+        palt(0, true)
         spr(1, mx, my)
     end
 end
 
 __gfx__
-00000000888000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000880000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700808000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00077000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000088800000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000
+0000000088000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000
+0070070080800000fff00fffffff0ffffff00ffffff00fffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000
+0007700000080000ff000ffffff000ffff0000fffff00fffff000ffffff00fffffff0fffffffffffffffffff0000000000000000000000000000000000000000
+0007700000000000fff0fffffff00ffffff00ffffff00ffff0fff0fffff00ffffff0fffffff0ffffffffffff0000000000000000000000000000000000000000
+0070070000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000
+0000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000
+0000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000
