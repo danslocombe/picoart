@@ -70,12 +70,13 @@ function make_circle(cx, cy, r, count)
         add(ropes, new_rope(nodes[i-1], nodes[i]))
     end
 
-    add(ropes, new_rope(nodes[start_count+1], nodes[#nodes]))
+    --add(ropes, new_rope(nodes[start_count+1], nodes[#nodes]))
+    add(ropes, new_rope(nodes[#nodes], nodes[start_count+1]))
 end
 
 function _init()
     make_circle(64, 64, 20, 10)
-    nodes[1].fixed = true
+    --nodes[1].fixed = true
 end
 
 function dist_2(x0, y0, x1, y1)
@@ -110,11 +111,11 @@ function _update60()
     end
     area = area * 0.5
 
-    local pressure_force_k = 0.1 * (1 + 2000 * temp) / area
+    local pressure_force_k = 0.1 * (1 + 200 * temp) / area
     for i,o in pairs(ropes) do
         local dx = o.to.x - o.from.x
         local dy = o.to.y - o.from.y
-        local rope_dyn_len = mag(dx, dy)
+        --local rope_dyn_len = mag(dx, dy)
         --local normal_dx = -dy / rope_dyn_len
         --local normal_dy = dx / rope_dyn_len
 
@@ -189,6 +190,12 @@ function _update60()
         selectable_node.x = mx
         selectable_node.y = my
     end
+
+    for i,o in pairs(nodes) do
+        if o.x < 28 then o.x = 28 end
+        if o.x > 100 then o.x = 100 end
+        if o.y > 100 then o.y = 100 end
+    end
 end
 
 viewmode = 1
@@ -231,6 +238,8 @@ function _draw()
         end
         for i,o in pairs(nodes) do
             circ(o.x, o.y, 2, 5)
+            local efk = 16
+            line(o.x, o.y, o.x + efk * o.external_force_x, o.y + efk * o.external_force_y, 11)
         end
         if selectable_node != nil then
             circ(selectable_node.x, selectable_node.y, 3, 4)
