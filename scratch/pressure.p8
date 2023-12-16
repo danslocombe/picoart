@@ -18,6 +18,8 @@ t = 0
 
 paused = true
 
+editor_rope_start = nil
+
 function project_dist_towards(x, y, tx, ty, dist)
     local dx = tx - x
     local dy = ty - y
@@ -198,21 +200,41 @@ function _update60()
         end
     end
 
-    if selectable_node != nil and stat(34) != 0 then
-        selectable_node.x = mx
-        selectable_node.y = my
+    if selectable_node != nil then
+        if (stat(34) != 0) then
+            selectable_node.x = mx
+            selectable_node.y = my
+            selectable_node.vel_x = 0
+            selectable_node.vel_y = 0
 
-        if (paused) then
-            -- if we are editing, update the lengths of attached ropes
-            for _,o in pairs(ropes) do
-                if (o.from == selectable_node or o.to == selectable_node) then
-                    o.length = mag(o.to.x - o.from.x, o.to.y - o.from.y)
+            if (paused) then
+                -- if we are editing, update the lengths of attached ropes
+                for _,o in pairs(ropes) do
+                    if (o.from == selectable_node or o.to == selectable_node) then
+                        o.length = mag(o.to.x - o.from.x, o.to.y - o.from.y)
+                    end
                 end
             end
         end
+
+        if editor_rope_start != nil and editor_rope_start != selectable_node and (not btnp(1)) then
+            -- create new rope
+            add(ropes, new_rope(selectable_node, editor_rope_start))
+            editor_rope_start = nil
+        end
+
+        if editor_rope_start == nil and (btnp(1)) then
+            editor_rope_start = selectable_node
+        end
+
+
     else
         if btnp(0) then
             add(nodes, new_node(mx, my))
+        end
+
+        if not btn(1) then
+            editor_rope_start = nil
         end
     end
 
@@ -292,6 +314,11 @@ function _draw()
 
     local mx = stat(32)
     local my = stat(33)
+
+    if (editor_rope_start != nil) then
+        line(editor_rope_start.x, editor_rope_start.y, mx, my, 8)
+    end
+
     --circfill(mx, my, 2, 2)
     palt(0, true)
     spr(1, mx, my)
